@@ -81,7 +81,23 @@ gh CLI:
 
 Dependabot will see that `nixpkgs` is behind `nixos-unstable` HEAD and open a PR to update `flake.lock`. The updated commit includes `hello` 2.12.3 (among many other package updates).
 
-### 5. Resetting the demo
+### 5. Verify the version before and after
+
+Before merging the Dependabot PR, build and check the hello version:
+
+```sh
+$ nix run . -- --version
+hello (GNU Hello) 2.12.2
+```
+
+After merging the PR, Dependabot will have updated `flake.lock` to a newer `nixpkgs` commit. Build again to confirm:
+
+```sh
+$ nix run . -- --version
+hello (GNU Hello) 2.12.3
+```
+
+### 6. Resetting the demo
 
 After merging the Dependabot PR, you can reset the lock file to replay the demo:
 
