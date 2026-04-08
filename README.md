@@ -6,7 +6,16 @@ As of [April 7, 2026](https://github.blog/changelog/2026-04-07-dependabot-versio
 
 ## How it works
 
-Dependabot monitors your `flake.lock` file and opens pull requests when any flake input has newer commits available on its tracked branch. Each input gets its own PR.
+Dependabot monitors your `flake.lock` file and opens pull requests when any flake input has newer commits available on its tracked branch. Each input gets its own PR equivalent of running `nix flake update`.
+
+```mermaid
+flowchart LR
+    A["⏰ daily / weekly / monthly"] --> B["Dependabot checks flake.lock inputs"]
+    B --> C{"Newer commits available?"}
+    C -- Yes --> D["Opens PR updating flake.lock"]
+    C -- No --> E["No action"]
+    D --> F["Review & merge"]
+```
 
 This repo's `flake.nix` tracks the `nixos-unstable` branch of `nixpkgs` and exposes GNU Hello as its default package. The `flake.lock` is intentionally pinned to an older `nixpkgs` commit that includes `hello` package version 2.12.2. Since `nixos-unstable` has moved forward and now includes `hello` 2.12.3, Dependabot will detect the outdated input and open a PR to update `flake.lock`.
 
@@ -14,7 +23,7 @@ This repo's `flake.nix` tracks the `nixos-unstable` branch of `nixpkgs` and expo
 
 ## Try it yourself
 
-### 1. Add a `flake.nix`
+### 1. Review `flake.nix`
 
 ```nix
 {
@@ -44,7 +53,7 @@ This repo's `flake.nix` tracks the `nixos-unstable` branch of `nixpkgs` and expo
 }
 ```
 
-### 2. Pin the lock file to the older commit
+### 2. See the lock file pinned to the older commit
 
 ```sh
 nix flake update nixpkgs \
@@ -75,25 +84,27 @@ Web interface:
 2. Click **"Check for updates"** next to the `nix` ecosystem entry
 
 gh CLI: 
-1. `gh api repos/<OWNER>/<REPO>/dispatches -f event_type=dependabot`
-
-
+```sh
+gh api repos/<OWNER>/<REPO>/dispatches -f event_type=dependabot
+```
 
 Dependabot will see that `nixpkgs` is behind `nixos-unstable` HEAD and open a PR to update `flake.lock`. The updated commit includes `hello` 2.12.3 (among many other package updates).
 
-### 5. Verify the version before and after
+Make sure the PR exists before proceeding.
 
-Before merging the Dependabot PR, build and check the hello version:
+### 5. Test the before and after
 
+On the main branch before the PR merge
 ```sh
-$ nix run . -- --version
+git checkout main
+nix run . -- --version
 hello (GNU Hello) 2.12.2
 ```
 
-After merging the PR, Dependabot will have updated `flake.lock` to a newer `nixpkgs` commit. Build again to confirm:
-
+Now see the PR branch
 ```sh
-$ nix run . -- --version
+git checkout main
+nix run . -- --version
 hello (GNU Hello) 2.12.3
 ```
 
@@ -119,4 +130,3 @@ Then trigger Dependabot again from the UI.
 ├── flake.nix            # Nix flake tracking nixos-unstable
 ├── flake.lock           # Pinned to an older nixpkgs commit
 └── README.md            # This file
-```
